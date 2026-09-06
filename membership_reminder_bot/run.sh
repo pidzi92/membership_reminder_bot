@@ -24,6 +24,8 @@ export PRE_EXPIRY_MESSAGE_TEMPLATE
 export ADMIN_NOTIFY_CHANNEL_ID
 export DRY_RUN
 export LOG_LEVEL
+export RESET_ALL_NOTIFICATIONS_TOKEN
+export RESET_NOTIFICATION_HANDLES
 
 DISCORD_BOT_TOKEN=$(bashio::config 'discord_bot_token')
 DISCORD_GUILD_ID=$(bashio::config 'discord_guild_id')
@@ -46,6 +48,8 @@ PRE_EXPIRY_MESSAGE_TEMPLATE=$(bashio::config 'pre_expiry_message_template')
 ADMIN_NOTIFY_CHANNEL_ID=$(bashio::config 'admin_notify_channel_id')
 DRY_RUN=$(bashio::config 'dry_run')
 LOG_LEVEL=$(bashio::config 'log_level')
+RESET_ALL_NOTIFICATIONS_TOKEN=$(bashio::config 'reset_all_notifications_token')
+RESET_NOTIFICATION_HANDLES=$(bashio::config 'reset_notification_handles')
 
 if ! bashio::fs.file_exists "${GOOGLE_SERVICE_ACCOUNT_JSON_PATH}"; then
     bashio::log.fatal "Google service account file not found at ${GOOGLE_SERVICE_ACCOUNT_JSON_PATH}"

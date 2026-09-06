@@ -116,29 +116,31 @@ minutes on slower hardware (e.g. Raspberry Pi).
 Go to the add-on's **Configuration** tab. Every option below is editable
 through the UI — no YAML editing needed.
 
-| Option | Default | What it does |
-|---|---|---|
-| `discord_bot_token` | — | Your bot token from step 2 (stored as a password field). |
-| `discord_guild_id` | — | The Discord server ID your members are in. |
-| `google_sheet_id` | — | The spreadsheet ID from step 3. |
-| `google_sheet_range` | `Članovi!A:L` | Sheet name + column range to read. Change the sheet name if yours differs. |
-| `google_service_account_json_path` | `/share/membership_reminder_bot/service-account.json` | Where the bot looks for the credentials file. |
-| `header_row` | `1` | Number of header rows to skip at the top of the sheet. |
-| `name_column` | `B` | Column with the member's display name (used in messages). |
-| `discord_handle_column` | `D` | Column with the Discord username. |
-| `status_column` | `E` | Column with membership status. |
-| `status_active_value` | `Aktivan` | The value in `status_column` that means "active" (case-insensitive). |
-| `paid_until_column` | `H` | Column with the "paid until" date. |
-| `date_format` | `DD/MM/YYYY` | Expected date format in `paid_until_column`. Rows that don't match this format exactly are skipped (no notification, no error). |
-| `timezone` | `Europe/Belgrade` | Timezone used to determine "today" when comparing dates. |
-| `check_interval_minutes` | `60` | How often the bot re-reads the sheet and re-evaluates everyone. |
-| `notify_days_before_expiry` | `3` | Send an early heads-up this many days before the due date. Set to `0` to disable early reminders entirely. |
-| `reminder_repeat_days` | `3` | Once someone is expired, how often (in days) to re-send the DM until they renew. |
-| `expired_message_template` | see config | Message sent once the due date has passed. Placeholders: `{name}`, `{handle}`, `{date}`, `{days}`. |
-| `pre_expiry_message_template` | see config | Message sent for the early heads-up. Same placeholders. |
+| Option | Default | What it does                                                                                                                              |
+|---|---|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `discord_bot_token` | — | Your bot token from step 2 (stored as a password field).                                                                                  |
+| `discord_guild_id` | — | The Discord server ID your members are in.                                                                                                |
+| `google_sheet_id` | — | The spreadsheet ID from step 3.                                                                                                           |
+| `google_sheet_range` | `Članovi!A:L` | Sheet name + column range to read. Change the sheet name if yours differs.                                                                |
+| `google_service_account_json_path` | `/share/membership_reminder_bot/service-account.json` | Where the bot looks for the credentials file.                                                                                             |
+| `header_row` | `1` | Number of header rows to skip at the top of the sheet.                                                                                    |
+| `name_column` | `B` | Column with the member's display name (used in messages).                                                                                 |
+| `discord_handle_column` | `D` | Column with the Discord username.                                                                                                         |
+| `status_column` | `E` | Column with membership status.                                                                                                            |
+| `status_active_value` | `Aktivan` | The value in `status_column` that means "active" (case-insensitive).                                                                      |
+| `paid_until_column` | `H` | Column with the "paid until" date.                                                                                                        |
+| `date_format` | `DD/MM/YYYY` | Expected date format in `paid_until_column`. Rows that don't match this format exactly are skipped (no notification, no error).           |
+| `timezone` | `Europe/Belgrade` | Timezone used to determine "today" when comparing dates.                                                                                  |
+| `check_interval_minutes` | `60` | How often the bot re-reads the sheet and re-evaluates everyone.                                                                           |
+| `notify_days_before_expiry` | `3` | Send an early heads-up this many days before the due date. Set to `0` to disable early reminders entirely.                                |
+| `reminder_repeat_days` | `3` | Once someone is expired, how often (in days) to re-send the DM until they renew.                                                          |
+| `expired_message_template` | see config | Message sent once the due date has passed. Placeholders: `{name}`, `{handle}`, `{date}`, `{days}`.                                        |
+| `pre_expiry_message_template` | see config | Message sent for the early heads-up. Same placeholders.                                                                                   |
 | `admin_notify_channel_id` | *(empty)* | Optional text channel ID where the bot posts a warning if a member's Discord handle can't be found in the server. Leave empty to disable. |
-| `dry_run` | `false` | If `true`, the bot logs what it *would* send instead of actually DMing anyone — use this to test your setup safely. |
-| `log_level` | `info` | `debug`, `info`, `warning`, or `error`. |
+| `dry_run` | `false` | If `true`, the bot logs what it *would* send instead of actually DMing anyone — use this to test your setup safely.                       |
+| `log_level` | `info` | `debug`, `info`, `warning`, or `error`.                                                                                                   |
+| `reset_all_notifications_token` | *(empty)* | Type **any** text here and restart to wipe **all** notification history once. See "Resetting notification history" below.                 |
+| `reset_notification_handles` | *(empty)* | Comma-separated Discord handles (e.g. `pidzi123, pidzi456`) whose notification history should be wiped once. See below.                   |
 
 After filling these in, click **Save**, then go to the **Info** tab and
 **Start** the add-on. Turn on **Start on boot** and **Watchdog** if you want
@@ -185,7 +187,37 @@ since the state is keyed by the due date itself.
 
 ---
 
-## 9. Troubleshooting
+## 9. Resetting notification history
+
+Useful when testing, or if you want to force a fresh reminder cycle without
+waiting for `reminder_repeat_days` to elapse.
+
+These are **one-shot token fields**, not simple on/off switches — this is
+deliberate, so a crash, update, or HA reboot can never silently re-wipe your
+real data just because a checkbox got left on.
+
+**Reset everyone:**
+1. Configuration tab → `reset_all_notifications_token` → type any text (e.g.
+   `reset-1`, or today's date) → Save → Restart.
+2. The log will show `Reset ALL notification history (...)`.
+3. To do it again later, change the text to something different (e.g.
+   `reset-2`) and restart — the same text won't re-trigger it twice.
+4. When you're done testing, you can leave the field as-is; it will not fire
+   again unless you change it.
+
+**Reset specific members only:**
+1. `reset_notification_handles` → enter a comma-separated list of Discord
+   handles, e.g. `pidzi123, pidzi456` → Save → Restart.
+2. Only those members' history is cleared; everyone else is untouched.
+3. Same one-shot behavior: change the text to fire it again later.
+
+Either reset makes the bot treat the affected member(s) as never-notified,
+so the very next check cycle will re-send a reminder to anyone among them
+who is currently expired (or within the pre-expiry window).
+
+---
+
+## 10. Troubleshooting
 
 - **"Google service account file not found..."** — Double-check the file
   was uploaded to exactly the path in `google_service_account_json_path`
@@ -209,7 +241,7 @@ since the state is keyed by the due date itself.
 
 ---
 
-## 10. Updating the sheet columns
+## 11. Updating the sheet columns
 
 If your real spreadsheet's column letters differ from `Članovi_2_0.xlsx`
 (e.g. you insert a column), just update `name_column`, `discord_handle_column`,

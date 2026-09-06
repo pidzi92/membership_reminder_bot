@@ -12,14 +12,16 @@ function createDiscordClient() {
 }
 
 /**
- * Finds a guild member whose username (new-style handle) or legacy tag
- * matches the given handle, case-insensitively.
+ * Finds a member in an already-fetched member collection whose username
+ * (new-style handle) or legacy tag matches the given handle, case-insensitively.
+ * Callers should fetch the member list ONCE per check cycle (guild.members.fetch())
+ * and reuse it here — calling fetch() per-row trips Discord's gateway rate limit
+ * on member-list requests (opcode 8) almost immediately.
  */
-async function findMemberByHandle(guild, handle) {
+function findMemberByHandle(members, handle) {
   const target = normalizeHandle(handle);
   if (!target) return null;
 
-  const members = await guild.members.fetch(); // uses the GuildMembers intent
   return (
     members.find((m) => normalizeHandle(m.user.username) === target) ||
     members.find((m) => normalizeHandle(m.user.tag) === target) ||

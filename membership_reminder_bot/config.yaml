@@ -1,8 +1,8 @@
 name: "Membership Reminder Bot"
-version: "1.0.0"
+version: "1.1.2"
 slug: "membership_reminder_bot"
 description: "Reads a Google Sheet of members and DMs a Discord reminder when someone's membership payment has expired"
-url: "https://github.com/your-github-username/membership_reminder_bot"
+url: "https://github.com/pidzi92/membership_reminder_bot"
 arch:
   - aarch64
   - amd64
@@ -36,6 +36,8 @@ options:
   admin_notify_channel_id: ""
   dry_run: false
   log_level: "info"
+  reset_all_notifications_token: ""
+  reset_notification_handles: ""
 schema:
   discord_bot_token: "password"
   discord_guild_id: "str"
@@ -58,3 +60,5 @@ schema:
   admin_notify_channel_id: "str?"
   dry_run: "bool"
   log_level: "list(debug|info|warning|error)"
+  reset_all_notifications_token: "str"
+  reset_notification_handles: "str"

@@ -42,6 +42,8 @@ const config = {
   adminNotifyChannelId: process.env.ADMIN_NOTIFY_CHANNEL_ID || '',
   dryRun: String(process.env.DRY_RUN).toLowerCase() === 'true',
   logLevel: (process.env.LOG_LEVEL || 'info').toLowerCase(),
+  resetAllToken: process.env.RESET_ALL_NOTIFICATIONS_TOKEN || '',
+  resetHandlesToken: process.env.RESET_NOTIFICATION_HANDLES || '',
 };
 
 function required(name) {
@@ -94,7 +96,21 @@ async function runCheck() {
   });
   if (!guild) return;
 
+  let members;
+  try {
+    members = await guild.members.fetch(); // fetched ONCE per cycle, reused for every row below
+  } catch (err) {
+    logger.error(`Failed to fetch guild members: ${err.message}`);
+    return;
+  }
+
   const persisted = state.load();
+  state.applyResets(
+    persisted,
+    { resetAllToken: config.resetAllToken, resetHandlesToken: config.resetHandlesToken },
+    normalizeHandle,
+    logger
+  );
   const now = dayjs().tz ? dayjs().tz(config.timezone) : dayjs();
   let checked = 0;
   let notified = 0;
@@ -141,7 +157,7 @@ async function runCheck() {
 
       if (!shouldNotify) continue;
 
-      const member = await findMemberByHandle(guild, handle);
+      const member = await findMemberByHandle(members, handle);
       if (!member) {
         logger.warn(`Discord user not found in server for handle "${handleRaw}" (${name})`);
         await notifyAdminChannel(
