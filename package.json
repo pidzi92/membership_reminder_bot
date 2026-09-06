@@ -1,0 +1,15 @@
+{
+  "name": "membership-reminder-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that reminds members via DM when their membership payment has expired, based on a Google Sheet",
+  "private": true,
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "googleapis": "^140.0.1",
+    "dayjs": "^1.11.11"
+  }
+}
